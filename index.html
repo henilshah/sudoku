@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>sudoku</title>
+    <script src = "lib/underscore-min.js"></script>
+    <script src = "lib/jquery-1.11.1.min.js"></script>
+    <link rel="stylesheet" href="stylesheets/main.css">
+    <link rel="stylesheet" href="stylesheets/mobile.css">
+</head>
+
+<body>
+    <div class = "main">
+        <div class = "content-group">
+            <div class = "content">
+                <div class = "content-title"> SUDOKU PUZZLE</div>
+<!--                <div class = "content-desc"> Created by Henil Shah</div>-->
+            </div>
+        </div>
+        <div class = "sudoku-container">
+          <div class = "sudoku-table main"></div>
+      	</div>
+        <div class = "buttons-group">
+            <div id = "check" class = "check-button"> Status</div>
+            <div id = "solve" class = "solve-button"> I Quit</div>
+            <div id = "restart" class = "restart-button"> New Game</div>  
+        </div>
+    </div>
+    
+    <script id = 'table_template' type = "text/template">
+    	<% for(var row = 0; row < board.length; row = row + 3 ) { %>
+    		<div class = "sudoku-tr">
+					<% for(var col = 0; col < board[0].length; col = col + 3) { %>
+						<div class = "sudoku-td">
+							<div class = "sudoku-table sub">
+							  <% for(var subRow = 0; subRow < 3; subRow++) { %>
+							  	<div class='sudoku-row'>
+							  		<% for(var subCol = 0; subCol < 3; subCol++) { %>
+							  			<% var defaultClass = board[row + subRow][col + subCol] ? 'default' : '' %>
+							  			<div class='sudoku-column <%= defaultClass %>' row = <%= row + subRow %> col = <%= col + subCol %> > 
+							  				<span> <%= board[row + subRow][col + subCol]%> </span>
+							  				<input maxlength="1"> </input>
+							  			</div>
+							  		<% } %>	
+							  	</div>
+							  <% } %>  
+							</div>
+						</div>				
+					<% } %>	    			
+    		</div>
+    	<% } %>
+    </script>
+    
+<script>
+    //** app initialization ** //
+    
+    var App = {
+        gameSize: 9,
+        subGameSize: 3
+        };
+        $( document ).ready(function() {
+        App.Game.gameInit();
+        });
+    
+</script>
+    
+<script src = "js/game.js"></script>
+    
+<script>  
+    //** logic for the game**//
+    
+    var App = App || {};
+    App.Position = function Position(row, col){
+        this.row = row;
+        this.col = col;
+};
+    App.Logics = {
+        validityChecker: function(){
+        var helper = {};
+        var visited = [];
+        var errorPositions = [];
+        var boardRowLength = App.board.length;
+        if(boardRowLength != App.gameSize) return false;
+        var boardColLength = App.board[0].length;
+        if(boardColLength != App.gameSize) return false;
+    
+    // initiate visited array
+    for (var i = 0; i < App.gameSize; i++){
+    	visited[i] = new Array(App.gameSize);
+    	for (var j = 0; j < App.gameSize; j++){
+    		visited[i][j] = false;
+    	}
+    }
+    //check in the row
+    for(var row = 0; row < boardRowLength; row++){
+      helper = {};
+      for(var col = 0; col < boardColLength; col++){
+        var curNum = App.board[row][col];
+        if (curNum){
+          if (_.has(helper, curNum) && !visited[row][col]) {
+          	visited[row][col] = true;
+          	errorPositions.push(new App.Position(row, col));
+          }else {
+          	helper[curNum] = 1;
+          }
+        }
+      }
+    }
+    //check in the column
+    for(var col=0;col<boardColLength;col++){
+      helper = {};
+      for(var row=0;row<boardRowLength;row++){
+        var curNum = App.board[row][col];
+        if (curNum){
+          if (_.has(helper, curNum) && !visited[row][col]) {
+          	visited[row][col] = true;
+          	errorPositions.push(new App.Position(row, col));
+          }else {
+          	helper[curNum] = 1;
+          }
+        }
+      }
+    }
+    //check 3*3 game
+    for(var row = 0; row < boardRowLength; row += App.subGameSize) {
+      for(var col = 0; col < boardColLength; col += App.subGameSize) {
+        helper = {};
+        for(var subRow = 0; subRow < 3; ++subRow) {
+          for(var subCol = 0; subCol < 3; ++subCol) {
+            var curNum = App.board[row + subRow][col + subCol];
+            if (curNum){
+              if (_.has(helper, curNum) && !visited[row + subRow][col + subCol]) {
+              	visited[row][col] = true;
+              	errorPositions.push(new App.Position(row + subRow, col + subCol));
+              }else {
+              	helper[curNum] = 1;
+              }
+            }
+          }
+        }
+      }
+    }
+    return errorPositions;
+  },
+  
+  checkCurrentRowColValid: function(row, col, value){
+  	for ( var r = 0; r < App.gameSize; r++){
+  		if (r != row && App.board[r][col] == value) return false;
+  	}
+  	for ( var c = 0; c < App.gameSize; c++){
+  		if (c != col && App.board[row][c] == value) return false;
+  	}
+  	return true;
+  },
+  
+  // Solve sudoku
+  solve: function(){
+  	for (var row = 0; row < App.gameSize; row++){
+  		for (var col = 0; col < App.gameSize; col++){
+  			if (!App.board[row][col]){
+  				for (var num = 1; num <= App.gameSize; num++){
+  					App.board[row][col] = num;
+  					if (_.isEmpty(this.validityChecker()) && this.solve()) return true;
+  					App.board[row][col] = null;
+  				}
+  				return false;
+  			}
+  		}
+  	}
+  	return true;
+	}
+};
+</script>
+    
+</body>
+
+</html>
