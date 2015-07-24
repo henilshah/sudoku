@@ -1,6 +1,6 @@
 The following game potrays the basic 3x3 sudoku puzzle. User can input numers [1-9] and follow along to the completion of the game. The pattern of given sudoku is referred from http://en.wikipedia.org/wiki/File:Sudoku-by-L2G-20050714.svg
 
-This game is hosted at:
+This game is hosted at: http://henilshah.x10host.com/
 
 ### Game Description
 - As a user you input the numbers and finally approach towards the complete valid sudoku.
